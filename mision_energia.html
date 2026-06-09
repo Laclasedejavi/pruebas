@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Misión Energía: Salva el Planeta 2050</title>
+  <style>
+    :root{
+      --bg1:#09132b; --bg2:#123c69; --neon:#29f2ff; --green:#38d982; --red:#ff4f6d;
+      --yellow:#ffd84d; --card:rgba(255,255,255,.12); --white:#fff; --dark:#07101f;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:Arial, Helvetica, sans-serif; color:var(--white);
+      background: radial-gradient(circle at top, #2457a6, var(--bg1) 65%);
+      min-height:100vh; overflow-x:hidden;
+    }
+    .screen{display:none; min-height:100vh; padding:28px; align-items:center; justify-content:center;}
+    .screen.active{display:flex;}
+    .panel{
+      width:min(1180px, 96vw); min-height:680px; border-radius:34px; padding:34px;
+      background:linear-gradient(145deg, rgba(255,255,255,.17), rgba(255,255,255,.07));
+      box-shadow:0 25px 80px rgba(0,0,0,.45), inset 0 0 0 2px rgba(255,255,255,.14);
+      backdrop-filter: blur(8px); position:relative; overflow:hidden;
+    }
+    .panel:before{
+      content:""; position:absolute; inset:-80px; background:
+      radial-gradient(circle at 15% 15%, rgba(41,242,255,.25), transparent 25%),
+      radial-gradient(circle at 85% 20%, rgba(255,216,77,.22), transparent 25%),
+      radial-gradient(circle at 50% 90%, rgba(56,217,130,.18), transparent 28%);
+      pointer-events:none;
+    }
+    .content{position:relative; z-index:1}
+    h1{font-size:clamp(42px, 6vw, 76px); line-height:.98; margin:0 0 12px; text-shadow:0 7px 0 rgba(0,0,0,.18);}
+    h2{font-size:clamp(30px, 4vw, 48px); margin:0 0 16px;}
+    h3{font-size:26px; margin:10px 0}
+    p{font-size:22px; line-height:1.35}
+    .tag{display:inline-block; background:var(--yellow); color:#172033; padding:8px 16px; border-radius:999px; font-weight:900; margin-bottom:14px;}
+    .btn{
+      border:0; border-radius:18px; padding:16px 24px; margin:8px; cursor:pointer;
+      font-size:20px; font-weight:900; color:#081225; background:linear-gradient(180deg, var(--yellow), #ff9f2f);
+      box-shadow:0 8px 0 #b65d0e, 0 16px 35px rgba(0,0,0,.3);
+      transition:.15s transform;
+    }
+    .btn:hover{transform:translateY(-3px) scale(1.03)}
+    .btn.secondary{background:linear-gradient(180deg, var(--neon), #58a7ff); box-shadow:0 8px 0 #2064a5, 0 16px 35px rgba(0,0,0,.3);}
+    .btn.green{background:linear-gradient(180deg, #85ffb1, var(--green)); box-shadow:0 8px 0 #11834c, 0 16px 35px rgba(0,0,0,.3);}
+    .hud{display:flex; gap:12px; flex-wrap:wrap; margin:16px 0 26px}
+    .hud span{background:rgba(0,0,0,.28); border:1px solid rgba(255,255,255,.18); padding:10px 15px; border-radius:14px; font-size:18px; font-weight:800}
+    .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:16px; margin-top:20px}
+    .card{
+      background:rgba(255,255,255,.14); border:2px solid rgba(255,255,255,.16); border-radius:22px;
+      padding:18px; min-height:126px; display:flex; align-items:center; justify-content:center; text-align:center;
+      font-size:22px; font-weight:900; cursor:pointer; user-select:none; box-shadow:0 12px 30px rgba(0,0,0,.22);
+    }
+    .card:hover{outline:4px solid rgba(41,242,255,.35)}
+    .card.good{background:rgba(56,217,130,.42); border-color:#7cffb1}
+    .card.bad{background:rgba(255,79,109,.42); border-color:#ff9aae}
+    .emoji{font-size:42px; display:block; margin-bottom:8px}
+    .columns{display:grid; grid-template-columns:1fr 1fr; gap:22px}
+    .zone{
+      border:3px dashed rgba(255,255,255,.35); border-radius:24px; padding:20px; min-height:300px;
+      background:rgba(0,0,0,.18)
+    }
+    .zone h3{text-align:center}
+    .tokens{display:flex; flex-wrap:wrap; gap:12px; margin:18px 0}
+    .token{
+      background:white; color:#10213a; border-radius:999px; padding:12px 16px; font-size:20px; font-weight:900;
+      cursor:grab; box-shadow:0 8px 18px rgba(0,0,0,.28)
+    }
+    .token.dragging{opacity:.45}
+    .dropItem{display:inline-block; margin:6px; padding:10px 13px; border-radius:14px; background:rgba(255,255,255,.18); font-weight:800}
+    .feedback{font-size:24px; font-weight:900; min-height:34px; margin:16px 0}
+    .progress{height:24px; width:100%; border-radius:999px; background:rgba(0,0,0,.32); overflow:hidden; margin:12px 0 18px}
+    .bar{height:100%; width:0%; background:linear-gradient(90deg, var(--green), var(--neon), var(--yellow)); transition:.5s}
+    .bigIcon{font-size:96px; filter:drop-shadow(0 10px 10px rgba(0,0,0,.28))}
+    .quizOptions{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:24px}
+    .option{
+      border:0; padding:20px; border-radius:22px; font-size:22px; font-weight:900; cursor:pointer;
+      background:rgba(255,255,255,.16); color:white; border:2px solid rgba(255,255,255,.2);
+    }
+    .option:hover{background:rgba(41,242,255,.25)}
+    .option.correct{background:rgba(56,217,130,.8)}
+    .option.wrong{background:rgba(255,79,109,.8)}
+    .mini{font-size:18px; opacity:.95}
+    .badge{
+      display:inline-flex; align-items:center; gap:8px; padding:12px 16px; border-radius:18px;
+      background:rgba(255,216,77,.18); border:2px solid rgba(255,216,77,.45); font-size:20px; font-weight:900; margin:5px;
+    }
+    @media(max-width:760px){.columns,.quizOptions{grid-template-columns:1fr}.panel{padding:20px} p{font-size:19px}}
+  </style>
+</head>
+<body>
+
+<section class="screen active" id="start">
+  <div class="panel"><div class="content">
+    <span class="tag">Videojuego educativo · 5.º Primaria</span>
+    <h1>🌍⚡ Misión Energía</h1>
+    <h2>Salva el Planeta 2050</h2>
+    <p>El Doctor Derroche ha mezclado las fuentes, formas y transformaciones de energía. Supera las misiones, gana cristales y recupera la energía del planeta.</p>
+    <button class="btn" onclick="go('intro')">▶ Comenzar misión</button>
+    <button class="btn secondary" onclick="go('map')">🗺 Ir al mapa</button>
+  </div></div>
+</section>
+
+<section class="screen" id="intro">
+  <div class="panel"><div class="content">
+    <h2>📡 Mensaje urgente</h2>
+    <p>La energía produce cambios en la materia. El Sol es nuestra fuente principal, pero también usamos petróleo, carbón, viento, agua, biomasa, gas natural y uranio.</p>
+    <p>Tu reto: distinguir fuentes renovables, no renovables, formas de energía y sus transformaciones.</p>
+    <button class="btn green" onclick="go('map')">Acepto el reto</button>
+  </div></div>
+</section>
+
+<section class="screen" id="map">
+  <div class="panel"><div class="content">
+    <h2>🗺 Mapa de misiones</h2>
+    <div class="hud">
+      <span>⚡ Puntos: <b id="scoreHud">0</b></span>
+      <span>💎 Cristales: <b id="crystalsHud">0</b>/4</span>
+      <span>🌍 Energía recuperada: <b id="planetHud">0</b>%</span>
+    </div>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+    <div class="grid">
+      <div class="card" onclick="go('level1')"><span><span class="emoji">🏭</span>Nivel 1<br>Fuentes de energía</span></div>
+      <div class="card" onclick="go('level2')"><span><span class="emoji">⚡</span>Nivel 2<br>Formas de energía</span></div>
+      <div class="card" onclick="go('level3')"><span><span class="emoji">🔁</span>Nivel 3<br>Transformaciones</span></div>
+      <div class="card" onclick="startQuiz()"><span><span class="emoji">🧠</span>Batalla final<br>Superquiz</span></div>
+    </div>
+  </div></div>
+</section>
+
+<section class="screen" id="level1">
+  <div class="panel"><div class="content">
+    <h2>🏭 Nivel 1: Clasifica las fuentes</h2>
+    <p class="mini">Arrastra cada fuente a su grupo. Renovables: en la práctica no se agotan. No renovables: se agotan y contaminan.</p>
+    <div class="tokens" id="tokens"></div>
+    <div class="columns">
+      <div class="zone" data-zone="no"><h3>🔴 No renovables</h3><div class="items"></div></div>
+      <div class="zone" data-zone="si"><h3>🟢 Renovables</h3><div class="items"></div></div>
+    </div>
+    <div class="feedback" id="fb1"></div>
+    <button class="btn" onclick="checkDrag()">Comprobar</button>
+    <button class="btn secondary" onclick="resetDrag()">Reiniciar</button>
+    <button class="btn green" onclick="go('level2')">Siguiente nivel</button>
+  </div></div>
+</section>
+
+<section class="screen" id="level2">
+  <div class="panel"><div class="content">
+    <h2>⚡ Nivel 2: ¿Qué forma de energía es?</h2>
+    <p class="mini">Pulsa la respuesta correcta para cada imagen.</p>
+    <div class="bigIcon" id="iconEnergy">💡</div>
+    <h3 id="energyQuestion">Una bombilla encendida emite principalmente...</h3>
+    <div class="quizOptions" id="energyOptions"></div>
+    <div class="feedback" id="fb2"></div>
+    <button class="btn green" onclick="nextEnergy()">Siguiente</button>
+    <button class="btn secondary" onclick="go('map')">Volver al mapa</button>
+  </div></div>
+</section>
+
+<section class="screen" id="level3">
+  <div class="panel"><div class="content">
+    <h2>🔁 Nivel 3: Cadena de transformaciones</h2>
+    <p>Completa la cadena: <b>pila → cables → bombilla</b></p>
+    <div class="grid">
+      <div class="card"><span><span class="emoji">🔋</span>Pila<br><small>Energía química</small></span></div>
+      <div class="card"><span><span class="emoji">➡️</span>Se transforma en...</span></div>
+      <div class="card" id="slot" onclick="chooseTransform()"><span><span class="emoji">❓</span>Pulsa para elegir</span></div>
+      <div class="card"><span><span class="emoji">💡</span>Bombilla<br><small>Luz y calor</small></span></div>
+    </div>
+    <div class="feedback" id="fb3"></div>
+    <button class="btn" onclick="checkTransform()">Comprobar cadena</button>
+    <button class="btn secondary" onclick="go('map')">Volver al mapa</button>
+  </div></div>
+</section>
+
+<section class="screen" id="quiz">
+  <div class="panel"><div class="content">
+    <h2>🧠 Batalla final contra Doctor Derroche</h2>
+    <div class="hud"><span>Pregunta <b id="qNum">1</b>/10</span><span>Puntos: <b id="quizScore">0</b></span></div>
+    <h3 id="qText"></h3>
+    <div class="quizOptions" id="qOptions"></div>
+    <div class="feedback" id="fbQuiz"></div>
+  </div></div>
+</section>
+
+<section class="screen" id="end">
+  <div class="panel"><div class="content">
+    <h2>🏆 Misión completada</h2>
+    <div class="bigIcon">🌍✨</div>
+    <p id="finalText"></p>
+    <div id="badges"></div>
+    <button class="btn" onclick="location.reload()">🔄 Jugar otra vez</button>
+  </div></div>
+</section>
+
+<script>
+let score=0, crystals=0, energyDone=0, energyIndex=0, chosenTransform="";
+const sources = [
+  ["Carbón","no"],["Petróleo","no"],["Gas natural","no"],["Uranio","no"],
+  ["Sol","si"],["Viento","si"],["Agua","si"],["Biomasa","si"]
+];
+const energyQuestions = [
+  {icon:"💡", q:"Una bombilla encendida emite principalmente...", ans:"Energía luminosa", ops:["Energía química","Energía luminosa","Energía nuclear","Energía mecánica"]},
+  {icon:"🔋", q:"Una pila almacena...", ans:"Energía química", ops:["Energía sonora","Energía química","Energía térmica","Energía mecánica"]},
+  {icon:"⚽", q:"Un balón en movimiento tiene...", ans:"Energía mecánica", ops:["Energía mecánica","Energía nuclear","Energía luminosa","Energía química"]},
+  {icon:"🔥", q:"Una estufa transforma energía eléctrica en...", ans:"Energía térmica", ops:["Energía sonora","Energía luminosa","Energía térmica","Energía nuclear"]},
+  {icon:"☢️", q:"El uranio se relaciona con...", ans:"Energía nuclear", ops:["Energía nuclear","Energía hidráulica","Energía sonora","Energía eólica"]}
+];
+const quiz = [
+  {q:"¿Cuál es la principal fuente de energía de la Tierra?", a:"El Sol", o:["El petróleo","El Sol","El carbón","El uranio"]},
+  {q:"¿Cuál de estas fuentes es no renovable?", a:"Gas natural", o:["Viento","Agua","Gas natural","Sol"]},
+  {q:"¿Qué fuente renovable utiliza el movimiento del aire?", a:"Viento", o:["Biomasa","Viento","Carbón","Uranio"]},
+  {q:"¿Qué quiere decir que una fuente no renovable se agota?", a:"Que se consume y puede acabarse", o:["Que no produce energía","Que se consume y puede acabarse","Que siempre vuelve","Que solo existe de noche"]},
+  {q:"La energía que transporta la corriente eléctrica es...", a:"Eléctrica", o:["Térmica","Química","Eléctrica","Sonora"]},
+  {q:"La energía que pasa de un cuerpo caliente a otro frío es...", a:"Térmica", o:["Nuclear","Térmica","Mecánica","Luminosa"]},
+  {q:"Una radio transforma energía eléctrica principalmente en...", a:"Sonora", o:["Sonora","Nuclear","Química","Hidráulica"]},
+  {q:"La biomasa puede producir...", a:"Energía eléctrica y térmica", o:["Solo energía nuclear","Energía eléctrica y térmica","Solo petróleo","Nada de energía"]},
+  {q:"¿Cuál contamina menos en su uso habitual?", a:"Energía solar", o:["Carbón","Petróleo","Gas natural","Energía solar"]},
+  {q:"En una linterna, la pila transforma energía química en...", a:"Energía eléctrica", o:["Energía nuclear","Energía eléctrica","Energía hidráulica","Energía sonora"]}
+];
+
+function go(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); updateHud(); if(id==="level1") resetDrag(); if(id==="level2") renderEnergy(); }
+function updateHud(){ document.querySelectorAll('#scoreHud').forEach(e=>e.textContent=score); document.querySelectorAll('#crystalsHud').forEach(e=>e.textContent=crystals); document.querySelectorAll('#planetHud').forEach(e=>e.textContent=crystals*25); document.getElementById('bar').style.width=(crystals*25)+"%"; }
+function award(points){ score += points; updateHud(); }
+function crystal(){ crystals=Math.min(4,crystals+1); updateHud(); }
+
+function resetDrag(){
+  const box=document.getElementById('tokens'); box.innerHTML='';
+  document.querySelectorAll('.items').forEach(i=>i.innerHTML='');
+  sources.sort(()=>Math.random()-.5).forEach(([name,type])=>{
+    const t=document.createElement('div'); t.className='token'; t.draggable=true; t.textContent=name; t.dataset.type=type;
+    t.addEventListener('dragstart',()=>t.classList.add('dragging'));
+    t.addEventListener('dragend',()=>t.classList.remove('dragging'));
+    box.appendChild(t);
+  });
+  document.getElementById('fb1').textContent='';
+}
+document.querySelectorAll('.zone').forEach(z=>{
+  z.addEventListener('dragover',e=>e.preventDefault());
+  z.addEventListener('drop',()=>{
+    const d=document.querySelector('.dragging'); if(!d) return;
+    z.querySelector('.items').appendChild(d);
+  });
+});
+function checkDrag(){
+  let ok=0,total=0;
+  document.querySelectorAll('.zone').forEach(z=>{
+    const zone=z.dataset.zone;
+    z.querySelectorAll('.token').forEach(t=>{total++; if(t.dataset.type===zone) ok++;});
+  });
+  if(total<8){document.getElementById('fb1').textContent='⚠️ Coloca todas las fuentes antes de comprobar.'; return;}
+  if(ok===8){document.getElementById('fb1').textContent='✅ ¡Perfecto! Has recuperado un cristal energético.'; award(100); crystal();}
+  else document.getElementById('fb1').textContent=`🔎 Tienes ${ok}/8 correctas. Revisa las fuentes que se agotan.`;
+}
+
+function renderEnergy(){
+  const e=energyQuestions[energyIndex];
+  document.getElementById('iconEnergy').textContent=e.icon;
+  document.getElementById('energyQuestion').textContent=e.q;
+  const ops=document.getElementById('energyOptions'); ops.innerHTML='';
+  e.ops.forEach(op=>{
+    const b=document.createElement('button'); b.className='option'; b.textContent=op;
+    b.onclick=()=>{ 
+      if(op===e.ans){b.classList.add('correct'); document.getElementById('fb2').textContent='✅ ¡Correcto!'; award(40);}
+      else {b.classList.add('wrong'); document.getElementById('fb2').textContent='❌ Revisa la forma de energía.';}
+    };
+    ops.appendChild(b);
+  });
+}
+function nextEnergy(){
+  energyIndex++;
+  document.getElementById('fb2').textContent='';
+  if(energyIndex>=energyQuestions.length){ energyIndex=0; crystal(); go('level3');}
+  else renderEnergy();
+}
+function chooseTransform(){
+  const opciones=["Energía eléctrica","Energía nuclear","Energía sonora"];
+  chosenTransform = opciones[(opciones.indexOf(chosenTransform)+1)%opciones.length] || opciones[0];
+  document.getElementById('slot').innerHTML=`<span><span class="emoji">⚡</span>${chosenTransform}</span>`;
+}
+function checkTransform(){
+  if(chosenTransform==="Energía eléctrica"){document.getElementById('fb3').textContent='✅ Cadena correcta: química → eléctrica → luz y calor.'; award(120); crystal();}
+  else document.getElementById('fb3').textContent='❌ La pila debe transformarse primero en energía eléctrica.';
+}
+
+let qIndex=0, qScore=0;
+function startQuiz(){ qIndex=0; qScore=0; go('quiz'); renderQuiz(); }
+function renderQuiz(){
+  document.getElementById('qNum').textContent=qIndex+1;
+  document.getElementById('quizScore').textContent=qScore;
+  document.getElementById('fbQuiz').textContent='';
+  const item=quiz[qIndex]; document.getElementById('qText').textContent=item.q;
+  const box=document.getElementById('qOptions'); box.innerHTML='';
+  item.o.forEach(op=>{
+    const b=document.createElement('button'); b.className='option'; b.textContent=op;
+    b.onclick=()=>{
+      document.querySelectorAll('#qOptions .option').forEach(x=>x.disabled=true);
+      if(op===item.a){b.classList.add('correct'); qScore++; award(50); document.getElementById('fbQuiz').textContent='✅ ¡Impacto directo a Doctor Derroche!';}
+      else {b.classList.add('wrong'); document.getElementById('fbQuiz').textContent='❌ Doctor Derroche esquiva el ataque.';}
+      setTimeout(()=>{qIndex++; if(qIndex<quiz.length) renderQuiz(); else finish();},900);
+    };
+    box.appendChild(b);
+  });
+}
+function finish(){
+  crystal();
+  go('end');
+  let rank=qScore>=9 ? "Guardián Supremo de la Energía ⭐⭐⭐" : qScore>=7 ? "Maestro Energético ⭐⭐" : "Aprendiz Energético ⭐";
+  document.getElementById('finalText').innerHTML=`Has conseguido <b>${qScore}/10</b> en la batalla final.<br>Rango obtenido: <b>${rank}</b><br>Puntos totales: <b>${score}</b>`;
+  document.getElementById('badges').innerHTML = `
+    <span class="badge">🏭 Experto en fuentes</span>
+    <span class="badge">⚡ Cazador de formas</span>
+    <span class="badge">🔁 Maestro de transformaciones</span>
+    <span class="badge">🌍 Protector del planeta</span>`;
+}
+</script>
+</body>
+</html>
